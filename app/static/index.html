@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Senai Face API - Teste</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Senai Face API</p>
+          <h1>Teste de reconhecimento facial</h1>
+        </div>
+        <a class="docs-link" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+      </header>
+
+      <section class="panel">
+        <div class="tabs" role="tablist" aria-label="Fluxo">
+          <button class="tab is-active" type="button" data-tab="enroll">Cadastrar rosto</button>
+          <button class="tab" type="button" data-tab="recognize">Reconhecer rosto</button>
+        </div>
+
+        <form id="enrollForm" class="flow is-active" data-flow="enroll">
+          <div class="grid">
+            <label>
+              ID da pessoa
+              <input id="personId" name="person_id" type="text" placeholder="ex: aluno-001" required />
+            </label>
+            <label>
+              Nome
+              <input id="personName" name="name" type="text" placeholder="Nome completo" required />
+            </label>
+          </div>
+
+          <div class="capture-block" data-mode="enroll">
+            <div class="mode-switch">
+              <button class="mode-button is-active" type="button" data-source="camera">Câmera</button>
+              <button class="mode-button" type="button" data-source="upload">Upload</button>
+            </div>
+
+            <div class="camera-box is-active" data-source-panel="camera">
+              <video id="enrollVideo" autoplay playsinline muted></video>
+              <canvas id="enrollCanvas" hidden></canvas>
+              <div class="actions">
+                <button class="secondary" type="button" data-action="start-camera">Abrir câmera</button>
+                <button class="secondary" type="button" data-action="capture">Tirar foto</button>
+              </div>
+            </div>
+
+            <div class="upload-box" data-source-panel="upload">
+              <input id="enrollUpload" type="file" accept="image/*" />
+            </div>
+
+            <img id="enrollPreview" class="preview" alt="Prévia do rosto para cadastro" hidden />
+          </div>
+
+          <button class="primary" type="submit">Cadastrar</button>
+        </form>
+
+        <form id="recognizeForm" class="flow" data-flow="recognize">
+          <div class="capture-block" data-mode="recognize">
+            <div class="mode-switch">
+              <button class="mode-button is-active" type="button" data-source="camera">Câmera</button>
+              <button class="mode-button" type="button" data-source="upload">Upload</button>
+            </div>
+
+            <div class="camera-box is-active" data-source-panel="camera">
+              <video id="recognizeVideo" autoplay playsinline muted></video>
+              <canvas id="recognizeCanvas" hidden></canvas>
+              <div class="actions">
+                <button class="secondary" type="button" data-action="start-camera">Abrir câmera</button>
+                <button class="secondary" type="button" data-action="capture">Tirar foto</button>
+              </div>
+            </div>
+
+            <div class="upload-box" data-source-panel="upload">
+              <input id="recognizeUpload" type="file" accept="image/*" />
+            </div>
+
+            <img id="recognizePreview" class="preview" alt="Prévia do rosto para reconhecimento" hidden />
+          </div>
+
+          <button class="primary" type="submit">Reconhecer</button>
+        </form>
+      </section>
+
+      <section id="result" class="result" aria-live="polite" hidden></section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
