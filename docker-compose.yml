@@ -1,0 +1,45 @@
+services:
+  api:
+    build:
+      context: .
+    container_name: senai-face-api
+    restart: unless-stopped
+    environment:
+      DB_PATH: /app/data/faces.db
+      INSIGHTFACE_HOME: /home/app/.insightface
+      FACE_CTX_ID: "${FACE_CTX_ID:--1}"
+      FACE_HIGH_THRESHOLD: "${FACE_HIGH_THRESHOLD:-0.70}"
+      FACE_MEDIUM_THRESHOLD: "${FACE_MEDIUM_THRESHOLD:-0.55}"
+    volumes:
+      - ./data:/app/data
+      - insightface-cache:/home/app/.insightface
+    expose:
+      - "8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: senai-face-nginx
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${NGINX_HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+
+volumes:
+  insightface-cache:
