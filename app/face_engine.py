@@ -2,13 +2,13 @@ import cv2
 import numpy as np
 from insightface.app import FaceAnalysis
 
+from app.config import FACE_CTX_ID
+
 
 class FaceEngine:
     def __init__(self):
         self.app = FaceAnalysis(name="buffalo_l")
-        self.app.prepare(ctx_id=-1, det_size=(640, 640))
-        # ctx_id=-1 = CPU
-        # ctx_id=0 = GPU, caso use onnxruntime-gpu depois
+        self.app.prepare(ctx_id=FACE_CTX_ID, det_size=(640, 640))
 
     def get_embedding(self, image_bytes: bytes):
         np_arr = np.frombuffer(image_bytes, np.uint8)
