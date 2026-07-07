@@ -62,13 +62,17 @@ def main():
     print(f"Faces cadastradas carregadas: {len(registered_faces)}")
 
     print("Carregando modelo InsightFace...")
-    face_app = FaceAnalysis(name="buffalo_l")
-    face_app.prepare(ctx_id=-1, det_size=(640, 640))
+    face_app = FaceAnalysis(
+        name="buffalo_l",
+        providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
+    )
+    
+    face_app.prepare(ctx_id=0, det_size=(640, 640))
     # ctx_id=-1 usa CPU
     # ctx_id=0 tenta usar GPU, se estiver configurado
 
     print("Abrindo câmera...")
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     if not cap.isOpened():
         print("Erro: não foi possível abrir a câmera.")
