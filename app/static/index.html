@@ -3,92 +3,208 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Senai Face API - Teste</title>
+    <title>Credenciamento Senia</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <main class="shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Senai Face API</p>
-          <h1>Teste de reconhecimento facial</h1>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <span>Jornada de Educação</span>
+          <strong>Senia</strong>
         </div>
-        <a class="docs-link" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
-      </header>
-
-      <section class="panel">
-        <div class="tabs" role="tablist" aria-label="Fluxo">
-          <button class="tab is-active" type="button" data-tab="enroll">Cadastrar rosto</button>
-          <button class="tab" type="button" data-tab="recognize">Reconhecer rosto</button>
+        <nav class="nav-list" aria-label="Navegação">
+          <button class="nav-item is-active" type="button" data-page="dashboard">Dashboard</button>
+          <button class="nav-item" type="button" data-page="people">Pessoas</button>
+          <button class="nav-item" type="button" data-page="test">Teste Facial</button>
+          <button class="nav-item" type="button" data-page="checkins">Credenciamentos</button>
+          <button class="nav-item" type="button" data-page="manual">Check-in Manual</button>
+          <button class="nav-item" type="button" data-page="logs">Logs</button>
+        </nav>
+        <div class="tags">
+          <span>Futuro</span>
+          <span>Educação</span>
+          <span>Tecnologia</span>
         </div>
+      </aside>
 
-        <form id="enrollForm" class="flow is-active" data-flow="enroll">
-          <div class="grid">
-            <label>
-              ID da pessoa
-              <input id="personId" name="person_id" type="text" placeholder="ex: aluno-001" required />
-            </label>
-            <label>
-              Nome
-              <input id="personName" name="name" type="text" placeholder="Nome completo" required />
-            </label>
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Credenciamento Senia</p>
+            <h1>CREDENCIAMENTO SENIA</h1>
+            <p class="subtitle">JORNADA DE EDUCAÇÃO</p>
           </div>
+          <a class="docs-link" href="/docs" target="_blank" rel="noreferrer">API Docs</a>
+        </header>
 
-          <div class="capture-block" data-mode="enroll">
-            <div class="mode-switch">
-              <button class="mode-button is-active" type="button" data-source="camera">Câmera</button>
-              <button class="mode-button" type="button" data-source="upload">Upload</button>
-            </div>
+        <section class="page is-active" data-page-panel="dashboard">
+          <div class="section-heading">
+            <h2>Dashboard</h2>
+            <button class="secondary" type="button" data-action="refresh">Atualizar</button>
+          </div>
+          <div class="metrics">
+            <article class="metric"><span>Pessoas</span><strong id="metricPeople">0</strong></article>
+            <article class="metric"><span>Fotos</span><strong id="metricPhotos">0</strong></article>
+            <article class="metric"><span>Credenciamentos</span><strong id="metricCheckins">0</strong></article>
+            <article class="metric"><span>Facial / Manual</span><strong id="metricMethods">0 / 0</strong></article>
+          </div>
+          <div class="grid two">
+            <section class="panel">
+              <h3>Últimos credenciamentos</h3>
+              <div id="latestCheckins" class="compact-list"></div>
+            </section>
+            <section class="panel">
+              <h3>Últimos logs</h3>
+              <div id="latestLogs" class="compact-list"></div>
+            </section>
+          </div>
+        </section>
 
-            <div class="camera-box is-active" data-source-panel="camera">
-              <video id="enrollVideo" autoplay playsinline muted></video>
-              <canvas id="enrollCanvas" hidden></canvas>
-              <div class="actions">
-                <button class="secondary" type="button" data-action="start-camera">Abrir câmera</button>
-                <button class="secondary" type="button" data-action="capture">Tirar foto</button>
+        <section class="page" data-page-panel="people">
+          <div class="section-heading">
+            <h2>Pessoas</h2>
+            <button class="secondary" type="button" data-action="refresh">Atualizar</button>
+          </div>
+          <div class="grid two">
+            <form id="personForm" class="panel form-panel">
+              <h3>Cadastrar participante</h3>
+              <label>ID<input name="person_id" type="text" required /></label>
+              <label>Nome<input name="name" type="text" required /></label>
+              <label>Unidade<input name="unit" type="text" /></label>
+              <label>Cargo/Função<input name="role" type="text" /></label>
+              <button class="primary" type="submit">Cadastrar pessoa</button>
+            </form>
+
+            <form id="photoForm" class="panel form-panel">
+              <h3>Adicionar foto</h3>
+              <label>Pessoa<select name="person_id" id="photoPersonSelect" required></select></label>
+              <div class="capture-box" data-capture="photo">
+                <label>Imagem<input name="image" type="file" accept="image/*" capture="user" /></label>
+                <div class="camera-frame">
+                  <video id="photoVideo" autoplay playsinline muted></video>
+                  <canvas id="photoCanvas" hidden></canvas>
+                  <img id="photoPreview" alt="Foto capturada para cadastro" hidden />
+                </div>
+                <div class="actions compact">
+                  <button class="secondary" type="button" data-camera-start="photo">Abrir câmera</button>
+                  <button class="secondary" type="button" data-camera-capture="photo">Tirar foto</button>
+                </div>
               </div>
-            </div>
-
-            <div class="upload-box" data-source-panel="upload">
-              <input id="enrollUpload" type="file" accept="image/*" />
-            </div>
-
-            <img id="enrollPreview" class="preview" alt="Prévia do rosto para cadastro" hidden />
+              <button class="primary" type="submit">Enviar foto</button>
+            </form>
           </div>
-
-          <button class="primary" type="submit">Cadastrar</button>
-        </form>
-
-        <form id="recognizeForm" class="flow" data-flow="recognize">
-          <div class="capture-block" data-mode="recognize">
-            <div class="mode-switch">
-              <button class="mode-button is-active" type="button" data-source="camera">Câmera</button>
-              <button class="mode-button" type="button" data-source="upload">Upload</button>
+          <section class="panel">
+            <h3>Lista de pessoas</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Unidade</th>
+                    <th>Função</th>
+                    <th>Fotos</th>
+                  </tr>
+                </thead>
+                <tbody id="peopleRows"></tbody>
+              </table>
             </div>
+          </section>
+        </section>
 
-            <div class="camera-box is-active" data-source-panel="camera">
-              <video id="recognizeVideo" autoplay playsinline muted></video>
-              <canvas id="recognizeCanvas" hidden></canvas>
-              <div class="actions">
-                <button class="secondary" type="button" data-action="start-camera">Abrir câmera</button>
-                <button class="secondary" type="button" data-action="capture">Tirar foto</button>
+        <section class="page" data-page-panel="test">
+          <div class="section-heading">
+            <h2>Teste Facial</h2>
+          </div>
+          <div class="grid two">
+            <form id="recognizeForm" class="panel form-panel">
+              <h3>Reconhecer rosto</h3>
+              <div class="capture-box" data-capture="recognize">
+                <label>Imagem<input name="image" type="file" accept="image/*" capture="user" /></label>
+                <div class="camera-frame">
+                  <video id="recognizeVideo" autoplay playsinline muted></video>
+                  <canvas id="recognizeCanvas" hidden></canvas>
+                  <img id="recognizePreview" alt="Foto capturada para teste" hidden />
+                </div>
+                <div class="actions compact">
+                  <button class="secondary" type="button" data-camera-start="recognize">Abrir câmera</button>
+                  <button class="secondary" type="button" data-camera-capture="recognize">Tirar foto</button>
+                </div>
               </div>
-            </div>
+              <button class="primary" type="submit">Testar reconhecimento</button>
+            </form>
 
-            <div class="upload-box" data-source-panel="upload">
-              <input id="recognizeUpload" type="file" accept="image/*" />
-            </div>
-
-            <img id="recognizePreview" class="preview" alt="Prévia do rosto para reconhecimento" hidden />
+            <section class="panel result-panel">
+              <h3>Resultado</h3>
+              <div id="recognizeResult" class="result-box empty-text">Nenhum teste realizado.</div>
+            </section>
           </div>
+        </section>
 
-          <button class="primary" type="submit">Reconhecer</button>
-        </form>
-      </section>
+        <section class="page" data-page-panel="checkins">
+          <div class="section-heading">
+            <h2>Credenciamentos</h2>
+            <div class="actions">
+              <button class="secondary" type="button" data-action="refresh">Atualizar</button>
+              <a class="primary as-link" href="/checkins/export">Exportar CSV</a>
+            </div>
+          </div>
+          <section class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>ID</th>
+                    <th>Método</th>
+                    <th>Confiança</th>
+                    <th>Duplicado</th>
+                    <th>Data/hora</th>
+                  </tr>
+                </thead>
+                <tbody id="checkinRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
 
-      <section id="result" class="result" aria-live="polite" hidden></section>
-    </main>
+        <section class="page" data-page-panel="manual">
+          <div class="section-heading">
+            <h2>Check-in Manual</h2>
+          </div>
+          <form id="manualForm" class="panel form-panel narrow">
+            <label>Buscar por nome ou ID<input id="manualSearch" type="text" autocomplete="off" /></label>
+            <label>Pessoa<select name="person_id" id="manualPersonSelect" required></select></label>
+            <button class="primary" type="submit">Credenciar manualmente</button>
+          </form>
+        </section>
 
+        <section class="page" data-page-panel="logs">
+          <div class="section-heading">
+            <h2>Logs</h2>
+            <button class="secondary" type="button" data-action="refresh">Atualizar</button>
+          </div>
+          <section class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ação</th>
+                    <th>Pessoa</th>
+                    <th>Mensagem</th>
+                    <th>Data/hora</th>
+                  </tr>
+                </thead>
+                <tbody id="logRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
     <script src="/static/app.js"></script>
   </body>
 </html>
