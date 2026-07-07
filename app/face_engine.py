@@ -7,8 +7,13 @@ from app.config import FACE_CTX_ID
 
 class FaceEngine:
     def __init__(self):
-        self.app = FaceAnalysis(name="buffalo_l")
-        self.app.prepare(ctx_id=FACE_CTX_ID, det_size=(640, 640))
+        self.app = FaceAnalysis(
+            name="buffalo_l",
+            providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
+        )
+        self.app.prepare(ctx_id=0, det_size=(640, 640))
+        # ctx_id=-1 = CPU
+        # ctx_id=0 = GPU, caso use onnxruntime-gpu depois
 
     def get_embedding(self, image_bytes: bytes):
         np_arr = np.frombuffer(image_bytes, np.uint8)
