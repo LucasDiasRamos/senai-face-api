@@ -1,11 +1,11 @@
 import csv
 import io
 
-from fastapi import APIRouter, File, Form, Request, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.database import dashboard_stats
-from app.services.checkin_service import facial_checkin, get_checkins, manual_checkin
+from app.services.checkin_service import facial_checkin, get_checkins, manual_checkin, remove_checkin
 from app.services.log_service import get_logs
 
 
@@ -27,6 +27,18 @@ def list_checkins_route():
     return {
         "success": True,
         "checkins": get_checkins(),
+    }
+
+
+@router.delete("/checkins/{checkin_id}")
+def delete_checkin_route(checkin_id: int):
+    checkin = remove_checkin(checkin_id)
+    if not checkin:
+        raise HTTPException(status_code=404, detail="Check-in não encontrado")
+    return {
+        "success": True,
+        "checkin": checkin,
+        "message": "Check-in removido com sucesso",
     }
 
 

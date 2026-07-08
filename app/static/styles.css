@@ -163,6 +163,22 @@ a {
   color: var(--text-primary);
 }
 
+.danger-button {
+  min-height: 34px;
+  border: 1px solid rgba(230, 84, 22, 0.7);
+  background: #000000;
+  color: var(--color-orange);
+  cursor: pointer;
+  font-weight: 800;
+  padding: 7px 10px;
+  text-transform: uppercase;
+}
+
+.danger-button:disabled {
+  cursor: progress;
+  opacity: 0.55;
+}
+
 .tags {
   display: grid;
   gap: 8px;

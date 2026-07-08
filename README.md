@@ -26,6 +26,7 @@ A API fica exposta pelo Nginx em:
 - `POST /checkin-face`
 - `POST /checkin-manual`
 - `GET /checkins`
+- `DELETE /checkins/{checkin_id}`
 - `GET /checkins/export`
 - `GET /logs`
 

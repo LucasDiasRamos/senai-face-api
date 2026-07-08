@@ -172,6 +172,11 @@ function renderCheckins() {
   $("#checkinRows").innerHTML = state.checkins.length
     ? state.checkins.map((item) => `
         <tr>
+          <td>
+            <button class="danger-button" type="button" data-checkin-delete="${item.id}">
+              Remover
+            </button>
+          </td>
           <td>${item.name}</td>
           <td>${item.person_id}</td>
           <td><span class="badge ${item.method === "face" ? "ok" : ""}">${item.method}</span></td>
@@ -180,7 +185,7 @@ function renderCheckins() {
           <td>${formatDate(item.checked_in_at)}</td>
         </tr>
       `).join("")
-    : emptyRow(6, "Nenhum credenciamento registrado.");
+    : emptyRow(7, "Nenhum credenciamento registrado.");
 }
 
 function logClass(action) {
@@ -341,6 +346,27 @@ $("#recognizeForm").addEventListener("submit", async (event) => {
 });
 
 $("#manualSearch").addEventListener("input", renderManualOptions);
+
+$("#checkinRows").addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-checkin-delete]");
+  if (!button) return;
+
+  const checkinId = button.dataset.checkinDelete;
+  const checkin = state.checkins.find((item) => String(item.id) === checkinId);
+  const label = checkin ? `${checkin.name} (${checkin.person_id})` : `#${checkinId}`;
+
+  if (!window.confirm(`Remover o check-in de ${label}?`)) return;
+
+  button.disabled = true;
+  try {
+    const data = await requestJson(`/checkins/${encodeURIComponent(checkinId)}`, { method: "DELETE" });
+    toast(data.message || "Check-in removido com sucesso.");
+    await refreshAll();
+  } catch (error) {
+    button.disabled = false;
+    toast(error.message, "error");
+  }
+});
 
 $$("[data-camera-start]").forEach((button) => {
   button.addEventListener("click", async () => {

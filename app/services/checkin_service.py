@@ -1,7 +1,7 @@
 from fastapi import UploadFile
 
 from app.config import FACE_HIGH_THRESHOLD
-from app.database import create_checkin, get_existing_checkin, list_checkins
+from app.database import create_checkin, delete_checkin, get_existing_checkin, list_checkins
 from app.services.log_service import register_log
 from app.services.people_service import require_person
 from app.services.recognition_service import recognize_image
@@ -81,3 +81,10 @@ def manual_checkin(person_id):
 
 def get_checkins():
     return list_checkins()
+
+
+def remove_checkin(checkin_id):
+    checkin = delete_checkin(checkin_id)
+    if checkin:
+        register_log("DELETE_CHECKIN", checkin["person_id"], f"Check-in removido: #{checkin_id}")
+    return checkin

@@ -219,6 +219,15 @@ def list_checkins():
         return [row_to_dict(row) for row in rows]
 
 
+def delete_checkin(checkin_id):
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM checkins WHERE id = ?", (checkin_id,)).fetchone()
+        if row is None:
+            return None
+        conn.execute("DELETE FROM checkins WHERE id = ?", (checkin_id,))
+        return row_to_dict(row)
+
+
 def add_log(action, person_id=None, message=None):
     with get_connection() as conn:
         cursor = conn.execute("""
