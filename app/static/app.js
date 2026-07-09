@@ -1,7 +1,9 @@
 const state = {
+  units: [],
   people: [],
   checkins: [],
   logs: [],
+  editingPersonId: null,
   captures: {
     photo: { stream: null, blob: null },
     recognize: { stream: null, blob: null },
@@ -127,11 +129,27 @@ function renderRecognitionResult(data) {
       <div><dt>Status</dt><dd>${recognized ? "Reconhecido" : "Não reconhecido"}</dd></div>
       <div><dt>ID</dt><dd>${data.person_id || "-"}</dd></div>
       <div><dt>Nome</dt><dd>${data.name || "-"}</dd></div>
+      <div><dt>ID Unidade</dt><dd>${data.unit_id || "-"}</dd></div>
       <div><dt>Unidade</dt><dd>${data.unit || "-"}</dd></div>
       <div><dt>Função</dt><dd>${data.role || "-"}</dd></div>
       <div><dt>Confiança</dt><dd>${formatConfidence(data.confidence)}</dd></div>
     </dl>
   `;
+}
+
+function unitOptions(selectedValue = "", placeholder = "Selecione uma unidade") {
+  const selected = selectedValue === null || selectedValue === undefined ? "" : String(selectedValue);
+  const options = state.units.map((unit) => (
+    `<option value="${unit.id}" ${String(unit.id) === selected ? "selected" : ""}>${unit.id} - ${unit.name}</option>`
+  )).join("");
+
+  return `<option value="">${placeholder}</option>${options}`;
+}
+
+function renderUnits() {
+  $("#personUnitSelect").innerHTML = unitOptions("", "Selecione uma unidade");
+  $("#manualUnitSelect").innerHTML = unitOptions("", "Selecione uma unidade");
+  $("#recognizeUnitSelect").innerHTML = unitOptions("", "Selecione uma unidade");
 }
 
 function renderPeople() {
@@ -141,6 +159,16 @@ function renderPeople() {
   rows.innerHTML = state.people.length
     ? state.people.map((person) => `
         <tr>
+          <td>
+            <div class="table-actions">
+              <button class="secondary action-button" type="button" data-person-edit="${person.person_id}">
+                Editar
+              </button>
+              <button class="danger-button" type="button" data-person-delete="${person.person_id}">
+                Remover
+              </button>
+            </div>
+          </td>
           <td>${person.person_id}</td>
           <td>${person.name}</td>
           <td>${person.unit || "-"}</td>
@@ -148,13 +176,58 @@ function renderPeople() {
           <td><span class="badge">${person.photos_count || 0}</span></td>
         </tr>
       `).join("")
-    : emptyRow(5, "Nenhuma pessoa cadastrada.");
+    : emptyRow(6, "Nenhuma pessoa cadastrada.");
 
   const options = state.people.map((person) => (
     `<option value="${person.person_id}">${person.person_id} - ${person.name}</option>`
   )).join("");
   photoSelect.innerHTML = options || '<option value="">Cadastre uma pessoa primeiro</option>';
+  renderRecognizeOptions();
   renderManualOptions();
+}
+
+function resetPersonForm() {
+  const form = $("#personForm");
+  form.reset();
+  form.dataset.mode = "create";
+  delete form.dataset.editingPersonId;
+  state.editingPersonId = null;
+  const idInput = form.elements.person_id;
+  idInput.disabled = false;
+  $("#personSubmitButton").textContent = "Cadastrar pessoa";
+  $("#personCancelButton").hidden = true;
+  if (state.units.length) {
+    $("#personUnitSelect").innerHTML = unitOptions("", "Selecione uma unidade");
+  }
+}
+
+function startPersonEdit(personId) {
+  const person = state.people.find((item) => item.person_id === personId);
+  if (!person) return;
+
+  const form = $("#personForm");
+  form.dataset.mode = "edit";
+  form.dataset.editingPersonId = person.person_id;
+  state.editingPersonId = person.person_id;
+  form.elements.person_id.value = person.person_id;
+  form.elements.person_id.disabled = true;
+  form.elements.name.value = person.name || "";
+  $("#personUnitSelect").innerHTML = unitOptions(person.unit_id ?? "", "Selecione uma unidade");
+  form.elements.role.value = person.role || "";
+  $("#personSubmitButton").textContent = "Salvar alterações";
+  $("#personCancelButton").hidden = false;
+  setPage("people");
+}
+
+function renderRecognizeOptions() {
+  const search = $("#recognizeSearch").value.trim().toLowerCase();
+  const filtered = state.people.filter((person) => {
+    const text = `${person.person_id} ${person.name}`.toLowerCase();
+    return text.includes(search);
+  });
+  $("#recognizePersonSelect").innerHTML = filtered.length
+    ? filtered.map((person) => `<option value="${person.person_id}">${person.person_id} - ${person.name}</option>`).join("")
+    : '<option value="">Pessoa não encontrada</option>';
 }
 
 function renderManualOptions() {
@@ -179,13 +252,14 @@ function renderCheckins() {
           </td>
           <td>${item.name}</td>
           <td>${item.person_id}</td>
+          <td>${item.unit || "-"}</td>
           <td><span class="badge ${item.method === "face" ? "ok" : ""}">${item.method}</span></td>
           <td>${formatConfidence(item.confidence)}</td>
           <td>${item.already_checked_in ? "Sim" : "Não"}</td>
           <td>${formatDate(item.checked_in_at)}</td>
         </tr>
       `).join("")
-    : emptyRow(7, "Nenhum credenciamento registrado.");
+    : emptyRow(8, "Nenhum credenciamento registrado.");
 }
 
 function logClass(action) {
@@ -216,7 +290,7 @@ function renderDashboard(data) {
 
   $("#latestCheckins").innerHTML = (data.latest_checkins || []).length
     ? data.latest_checkins.map((item) => `
-        <article><strong>${item.name}</strong><span>${item.method} - ${formatDate(item.checked_in_at)}</span></article>
+        <article><strong>${item.name}</strong><span>${item.unit || "-"} - ${item.method} - ${formatDate(item.checked_in_at)}</span></article>
       `).join("")
     : '<p class="empty-text">Sem credenciamentos.</p>';
 
@@ -225,6 +299,12 @@ function renderDashboard(data) {
         <article><strong>${item.action}</strong><span>${item.message || "-"}</span></article>
       `).join("")
     : '<p class="empty-text">Sem logs.</p>';
+}
+
+async function loadUnits() {
+  const data = await requestJson("/units");
+  state.units = data.units || [];
+  renderUnits();
 }
 
 async function loadPeople() {
@@ -252,6 +332,7 @@ async function loadDashboard() {
 
 async function refreshAll() {
   try {
+    await loadUnits();
     await Promise.all([loadPeople(), loadCheckins(), loadLogs(), loadDashboard()]);
   } catch (error) {
     toast(error.message, "error");
@@ -274,15 +355,23 @@ $$('[data-action="refresh"]').forEach((button) => {
 $("#personForm").addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.currentTarget;
+  const mode = form.dataset.mode || "create";
+  const payload = new FormData(form);
+  const personId = mode === "edit" ? form.dataset.editingPersonId : payload.get("person_id");
   try {
-    await requestJson("/people", { method: "POST", body: new FormData(form) });
-    form.reset();
-    toast("Pessoa cadastrada com sucesso.");
+    const data = await requestJson(
+      mode === "edit" ? `/people/${encodeURIComponent(personId)}` : "/people",
+      { method: mode === "edit" ? "PUT" : "POST", body: payload },
+    );
+    resetPersonForm();
+    toast(data.message || (mode === "edit" ? "Pessoa atualizada com sucesso." : "Pessoa cadastrada com sucesso."));
     await refreshAll();
   } catch (error) {
     toast(error.message, "error");
   }
 });
+
+$("#personCancelButton").addEventListener("click", resetPersonForm);
 
 $("#photoForm").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -326,26 +415,60 @@ $("#manualForm").addEventListener("submit", async (event) => {
 
 $("#recognizeForm").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const form = event.currentTarget;
   const image = selectedCapture("recognize");
 
   if (!image) {
-    toast("Selecione uma imagem ou tire uma foto para testar.", "error");
+    toast("Selecione uma imagem ou tire uma foto para o check-in facial.", "error");
     return;
   }
 
-  const payload = new FormData();
-  payload.append("image", image, "teste-reconhecimento.jpg");
+  const payload = new FormData(form);
+  payload.delete("image");
+  payload.append("image", image, "checkin-facial.jpg");
 
   try {
-    const data = await requestJson("/recognize", { method: "POST", body: payload });
+    const data = await requestJson("/checkin-face", { method: "POST", body: payload });
     renderRecognitionResult(data);
-    toast(data.message || "Teste concluído.", data.recognized ? "success" : "warn");
+    toast(data.message || "Check-in facial concluído.", data.recognized ? "success" : "warn");
+    await refreshAll();
   } catch (error) {
     toast(error.message, "error");
   }
 });
 
+$("#recognizeSearch").addEventListener("input", renderRecognizeOptions);
 $("#manualSearch").addEventListener("input", renderManualOptions);
+
+$("#peopleRows").addEventListener("click", async (event) => {
+  const editButton = event.target.closest("[data-person-edit]");
+  if (editButton) {
+    startPersonEdit(editButton.dataset.personEdit);
+    return;
+  }
+
+  const deleteButton = event.target.closest("[data-person-delete]");
+  if (!deleteButton) return;
+
+  const personId = deleteButton.dataset.personDelete;
+  const person = state.people.find((item) => item.person_id === personId);
+  const label = person ? `${person.name} (${person.person_id})` : personId;
+
+  if (!window.confirm(`Remover a pessoa ${label} e todos os dados dela?`)) return;
+
+  deleteButton.disabled = true;
+  try {
+    const data = await requestJson(`/people/${encodeURIComponent(personId)}`, { method: "DELETE" });
+    if (state.editingPersonId === personId) {
+      resetPersonForm();
+    }
+    toast(data.message || "Pessoa removida com sucesso.");
+    await refreshAll();
+  } catch (error) {
+    deleteButton.disabled = false;
+    toast(error.message, "error");
+  }
+});
 
 $("#checkinRows").addEventListener("click", async (event) => {
   const button = event.target.closest("[data-checkin-delete]");

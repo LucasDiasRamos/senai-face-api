@@ -13,13 +13,18 @@ router = APIRouter()
 
 
 @router.post("/checkin-face")
-async def checkin_face_route(request: Request, image: UploadFile = File(...)):
-    return await facial_checkin(image, request.app.state.face_engine)
+async def checkin_face_route(
+    request: Request,
+    image: UploadFile = File(...),
+    person_id: str = Form(...),
+    unit_id: int | None = Form(None),
+):
+    return await facial_checkin(image, request.app.state.face_engine, person_id=person_id, unit_id=unit_id)
 
 
 @router.post("/checkin-manual")
-def checkin_manual_route(person_id: str = Form(...)):
-    return manual_checkin(person_id)
+def checkin_manual_route(person_id: str = Form(...), unit_id: int | None = Form(None)):
+    return manual_checkin(person_id, unit_id=unit_id)
 
 
 @router.get("/checkins")
@@ -47,13 +52,15 @@ def export_checkins_route():
     output = io.StringIO()
     writer = csv.DictWriter(
         output,
-        fieldnames=["person_id", "name", "method", "confidence", "already_checked_in", "checked_in_at"],
+        fieldnames=["person_id", "name", "unit_id", "unit", "method", "confidence", "already_checked_in", "checked_in_at"],
     )
     writer.writeheader()
     for row in get_checkins():
         writer.writerow({
             "person_id": row["person_id"],
             "name": row["name"],
+            "unit_id": row.get("unit_id") if row.get("unit_id") is not None else "",
+            "unit": row.get("unit") or "",
             "method": row["method"],
             "confidence": row["confidence"] if row["confidence"] is not None else "",
             "already_checked_in": row["already_checked_in"],

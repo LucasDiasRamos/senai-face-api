@@ -20,6 +20,7 @@ RUN pip install --upgrade pip \
     && pip install -r requirements.txt
 
 COPY app ./app
+COPY unidades.txt ./unidades.txt
 
 RUN useradd --create-home --shell /usr/sbin/nologin app \
     && mkdir -p /app/data "$INSIGHTFACE_HOME" \

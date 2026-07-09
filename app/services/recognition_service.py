@@ -9,6 +9,7 @@ def _format_match(match, score):
     return {
         "person_id": match["person_id"],
         "name": match["name"],
+        "unit_id": match.get("unit_id"),
         "unit": match.get("unit"),
         "role": match.get("role"),
         "confidence": round(score, 4),

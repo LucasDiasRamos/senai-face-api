@@ -21,6 +21,9 @@ A API fica exposta pelo Nginx em:
 ## Endpoints principais
 
 - `POST /people`
+- `PUT /people/{person_id}`
+- `DELETE /people/{person_id}`
+- `GET /units`
 - `POST /people/{person_id}/photo`
 - `POST /recognize`
 - `POST /checkin-face`
@@ -31,6 +34,16 @@ A API fica exposta pelo Nginx em:
 - `GET /logs`
 
 As mesmas rotas também respondem com prefixo `/api`, por exemplo `POST /api/checkin-face`.
+
+## Unidades
+
+As unidades são carregadas do arquivo `unidades.txt` na raiz do projeto e sincronizadas com a tabela `units` no startup da aplicação.
+
+- `GET /units` lista as unidades oficiais
+- `POST /people` aceita `unit_id` no formulário
+- `POST /enroll` aceita `unit_id` no formulário
+- `POST /checkin-face` aceita `unit_id` no formulário multipart
+- `POST /checkin-manual` aceita `unit_id` no formulário
 
 Para trocar a porta pública, copie o exemplo de ambiente e ajuste `NGINX_PORT`:
 

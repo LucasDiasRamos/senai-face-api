@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Credenciamento Senia</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260708-checkin-delete" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260709-people-edit-delete" />
   </head>
   <body>
     <div class="app-shell">
@@ -16,7 +16,7 @@
         <nav class="nav-list" aria-label="Navegação">
           <button class="nav-item is-active" type="button" data-page="dashboard">Dashboard</button>
           <button class="nav-item" type="button" data-page="people">Pessoas</button>
-          <button class="nav-item" type="button" data-page="test">Teste Facial</button>
+          <button class="nav-item" type="button" data-page="test">Check-in Facial</button>
           <button class="nav-item" type="button" data-page="checkins">Credenciamentos</button>
           <button class="nav-item" type="button" data-page="manual">Check-in Manual</button>
           <button class="nav-item" type="button" data-page="logs">Logs</button>
@@ -71,9 +71,12 @@
               <h3>Cadastrar participante</h3>
               <label>ID<input name="person_id" type="text" required /></label>
               <label>Nome<input name="name" type="text" required /></label>
-              <label>Unidade<input name="unit" type="text" /></label>
+              <label>Unidade<select name="unit_id" id="personUnitSelect" required></select></label>
               <label>Cargo/Função<input name="role" type="text" /></label>
-              <button class="primary" type="submit">Cadastrar pessoa</button>
+              <div class="actions compact">
+                <button class="primary" id="personSubmitButton" type="submit">Cadastrar pessoa</button>
+                <button class="secondary" id="personCancelButton" type="button" hidden>Cancelar edição</button>
+              </div>
             </form>
 
             <form id="photoForm" class="panel form-panel">
@@ -100,6 +103,7 @@
               <table>
                 <thead>
                   <tr>
+                    <th>Ações</th>
                     <th>ID</th>
                     <th>Nome</th>
                     <th>Unidade</th>
@@ -115,11 +119,14 @@
 
         <section class="page" data-page-panel="test">
           <div class="section-heading">
-            <h2>Teste Facial</h2>
+            <h2>Check-in Facial</h2>
           </div>
           <div class="grid two">
             <form id="recognizeForm" class="panel form-panel">
-              <h3>Reconhecer rosto</h3>
+              <h3>Realizar check-in facial</h3>
+              <label>Buscar por nome ou ID<input id="recognizeSearch" type="text" autocomplete="off" /></label>
+              <label>Pessoa<select name="person_id" id="recognizePersonSelect" required></select></label>
+              <label>Unidade<select name="unit_id" id="recognizeUnitSelect" required></select></label>
               <div class="capture-box" data-capture="recognize">
                 <label>Imagem<input name="image" type="file" accept="image/*" capture="user" /></label>
                 <div class="camera-frame">
@@ -132,12 +139,12 @@
                   <button class="secondary" type="button" data-camera-capture="recognize">Tirar foto</button>
                 </div>
               </div>
-              <button class="primary" type="submit">Testar reconhecimento</button>
+              <button class="primary" type="submit">Realizar check-in facial</button>
             </form>
 
             <section class="panel result-panel">
               <h3>Resultado</h3>
-              <div id="recognizeResult" class="result-box empty-text">Nenhum teste realizado.</div>
+              <div id="recognizeResult" class="result-box empty-text">Nenhum check-in facial realizado.</div>
             </section>
           </div>
         </section>
@@ -158,6 +165,7 @@
                     <th>Ações</th>
                     <th>Nome</th>
                     <th>ID</th>
+                    <th>Unidade</th>
                     <th>Método</th>
                     <th>Confiança</th>
                     <th>Duplicado</th>
@@ -177,6 +185,7 @@
           <form id="manualForm" class="panel form-panel narrow">
             <label>Buscar por nome ou ID<input id="manualSearch" type="text" autocomplete="off" /></label>
             <label>Pessoa<select name="person_id" id="manualPersonSelect" required></select></label>
+            <label>Unidade<select name="unit_id" id="manualUnitSelect" required></select></label>
             <button class="primary" type="submit">Credenciar manualmente</button>
           </form>
         </section>
@@ -206,6 +215,6 @@
     </div>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/static/app.js?v=20260708-checkin-delete"></script>
+    <script src="/static/app.js?v=20260709-people-edit-delete"></script>
   </body>
 </html>

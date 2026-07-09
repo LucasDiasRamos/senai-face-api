@@ -179,6 +179,17 @@ a {
   opacity: 0.55;
 }
 
+.table-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  min-height: 34px;
+  padding: 7px 10px;
+}
+
 .tags {
   display: grid;
   gap: 8px;
