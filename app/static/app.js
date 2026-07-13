@@ -123,10 +123,13 @@ function renderRecognitionResult(data) {
   const result = $("#recognizeResult");
   const recognized = Boolean(data.recognized);
   result.className = `result-box ${recognized ? "success" : "error"}`;
+  const status = data.status || (recognized ? "recognized" : "not_recognized");
   result.innerHTML = `
     <strong>${data.message || (recognized ? "Pessoa reconhecida." : "Pessoa não reconhecida.")}</strong>
     <dl>
-      <div><dt>Status</dt><dd>${recognized ? "Reconhecido" : "Não reconhecido"}</dd></div>
+      <div><dt>Status</dt><dd>${status}</dd></div>
+      <div><dt>Rostos</dt><dd>${data.face_count ?? "-"}</dd></div>
+      <div><dt>Reconhecido</dt><dd>${recognized ? "Sim" : "Não"}</dd></div>
       <div><dt>ID</dt><dd>${data.person_id || "-"}</dd></div>
       <div><dt>Nome</dt><dd>${data.name || "-"}</dd></div>
       <div><dt>ID Unidade</dt><dd>${data.unit_id || "-"}</dd></div>
@@ -149,7 +152,6 @@ function unitOptions(selectedValue = "", placeholder = "Selecione uma unidade") 
 function renderUnits() {
   $("#personUnitSelect").innerHTML = unitOptions("", "Selecione uma unidade");
   $("#manualUnitSelect").innerHTML = unitOptions("", "Selecione uma unidade");
-  $("#recognizeUnitSelect").innerHTML = unitOptions("", "Selecione uma unidade");
 }
 
 function renderPeople() {
@@ -182,7 +184,6 @@ function renderPeople() {
     `<option value="${person.person_id}">${person.person_id} - ${person.name}</option>`
   )).join("");
   photoSelect.innerHTML = options || '<option value="">Cadastre uma pessoa primeiro</option>';
-  renderRecognizeOptions();
   renderManualOptions();
 }
 
@@ -217,17 +218,6 @@ function startPersonEdit(personId) {
   $("#personSubmitButton").textContent = "Salvar alterações";
   $("#personCancelButton").hidden = false;
   setPage("people");
-}
-
-function renderRecognizeOptions() {
-  const search = $("#recognizeSearch").value.trim().toLowerCase();
-  const filtered = state.people.filter((person) => {
-    const text = `${person.person_id} ${person.name}`.toLowerCase();
-    return text.includes(search);
-  });
-  $("#recognizePersonSelect").innerHTML = filtered.length
-    ? filtered.map((person) => `<option value="${person.person_id}">${person.person_id} - ${person.name}</option>`).join("")
-    : '<option value="">Pessoa não encontrada</option>';
 }
 
 function renderManualOptions() {
@@ -426,6 +416,8 @@ $("#recognizeForm").addEventListener("submit", async (event) => {
   const payload = new FormData(form);
   payload.delete("image");
   payload.append("image", image, "checkin-facial.jpg");
+  payload.append("source", "web_frontend");
+  payload.append("robot_id", "web-admin");
 
   try {
     const data = await requestJson("/checkin-face", { method: "POST", body: payload });
@@ -437,7 +429,6 @@ $("#recognizeForm").addEventListener("submit", async (event) => {
   }
 });
 
-$("#recognizeSearch").addEventListener("input", renderRecognizeOptions);
 $("#manualSearch").addEventListener("input", renderManualOptions);
 
 $("#peopleRows").addEventListener("click", async (event) => {

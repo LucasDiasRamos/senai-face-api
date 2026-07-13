@@ -16,10 +16,10 @@ router = APIRouter()
 async def checkin_face_route(
     request: Request,
     image: UploadFile = File(...),
-    person_id: str = Form(...),
-    unit_id: int | None = Form(None),
+    source: str | None = Form(None),
+    robot_id: str | None = Form(None),
 ):
-    return await facial_checkin(image, request.app.state.face_engine, person_id=person_id, unit_id=unit_id)
+    return await facial_checkin(image, request.app.state.face_engine, source=source, robot_id=robot_id)
 
 
 @router.post("/checkin-manual")

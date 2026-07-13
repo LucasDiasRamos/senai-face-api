@@ -58,54 +58,75 @@ def _record_checkin(person, method, confidence=None):
     }
 
 
-async def facial_checkin(image: UploadFile, face_engine, person_id, unit_id=None):
-    expected_person = require_person(person_id)
-    if unit_id is not None:
-        require_unit(unit_id)
-
+async def facial_checkin(
+    image: UploadFile,
+    face_engine,
+    source: str | None = None,
+    robot_id: str | None = None,
+):
     recognition = await recognize_image(image, face_engine)
+    status = recognition.get("status")
     confidence = recognition.get("confidence")
+    request_context = f"source={source or 'unknown'}; robot_id={robot_id or 'unknown'}"
+
+    if status == "no_face":
+        register_log("NO_FACE_CHECKIN", None, request_context)
+        return {
+            "status": "no_face",
+            "recognized": False,
+            "checked_in": False,
+            "already_checked_in": False,
+            "face_count": 0,
+            "confidence": None,
+            "message": recognition.get("message"),
+        }
+
+    if status == "multiple_faces":
+        face_count = recognition.get("face_count", 2)
+        register_log("MULTIPLE_FACES_CHECKIN", None, f"{request_context}; face_count={face_count}")
+        return {
+            "status": "multiple_faces",
+            "recognized": False,
+            "checked_in": False,
+            "already_checked_in": False,
+            "face_count": face_count,
+            "confidence": None,
+            "message": recognition.get("message"),
+        }
 
     if not recognition.get("recognized") or confidence is None or confidence < FACE_HIGH_THRESHOLD:
-        register_log("LOW_CONFIDENCE", recognition.get("person_id"), "Check-in facial sem confiança suficiente")
+        person_id = recognition.get("person_id")
+        register_log("LOW_CONFIDENCE", person_id, f"{request_context}; confidence={confidence}")
+        is_low_confidence = recognition.get("needs_confirmation") or status == "low_confidence"
         return {
+            "status": "low_confidence" if is_low_confidence else "not_recognized",
             "recognized": False,
             "checked_in": False,
+            "already_checked_in": False,
+            "face_count": recognition.get("face_count", 1),
             "possible_person": recognition.get("name"),
             "confidence": confidence,
-            "message": "Pessoa não reconhecida com confiança suficiente",
+            "message": (
+                "Pessoa possivelmente reconhecida, mas sem confiança suficiente para o credenciamento automático"
+                if is_low_confidence
+                else "Pessoa não reconhecida com confiança suficiente"
+            ),
         }
 
-    if recognition["person_id"] != expected_person["person_id"]:
-        register_log(
-            "FACE_MISMATCH",
-            expected_person["person_id"],
-            f"Face reconhecida para {recognition['person_id']} mas o check-in solicitado era para {expected_person['person_id']}",
-        )
-        return {
-            "recognized": False,
-            "checked_in": False,
-            "person_id": expected_person["person_id"],
-            "name": expected_person["name"],
-            "unit_id": unit_id if unit_id is not None else expected_person.get("unit_id"),
-            "unit": None if unit_id is not None else expected_person.get("unit"),
-            "role": expected_person.get("role"),
-            "confidence": confidence,
-            "message": "A face enviada nao corresponde a pessoa selecionada",
-        }
-
-    person = {
-        "person_id": expected_person["person_id"],
-        "name": expected_person["name"],
-        "unit_id": unit_id if unit_id is not None else expected_person.get("unit_id"),
-        "unit": None if unit_id is not None else expected_person.get("unit"),
-        "role": expected_person.get("role"),
-    }
+    person = require_person(recognition["person_id"])
     result = _record_checkin(person, "face", confidence)
+    final_status = "already_checked_in" if result.get("already_checked_in") else "recognized"
+    register_log(
+        "FACE_CHECKIN_RESULT",
+        person["person_id"],
+        f"{request_context}; status={final_status}; confidence={confidence}",
+    )
     return {
+        "status": final_status,
         "recognized": True,
+        "face_count": 1,
         **result,
-        "role": expected_person.get("role"),
+        "role": person.get("role"),
     }
 
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Credenciamento Senia</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260709-people-edit-delete" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260713-auto-checkin" />
   </head>
   <body>
     <div class="app-shell">
@@ -124,9 +124,10 @@
           <div class="grid two">
             <form id="recognizeForm" class="panel form-panel">
               <h3>Realizar check-in facial</h3>
-              <label>Buscar por nome ou ID<input id="recognizeSearch" type="text" autocomplete="off" /></label>
-              <label>Pessoa<select name="person_id" id="recognizePersonSelect" required></select></label>
-              <label>Unidade<select name="unit_id" id="recognizeUnitSelect" required></select></label>
+              <p class="helper-text">
+                A identificação será realizada automaticamente pela fotografia.
+                Posicione apenas uma pessoa por vez em frente à câmera.
+              </p>
               <div class="capture-box" data-capture="recognize">
                 <label>Imagem<input name="image" type="file" accept="image/*" capture="user" /></label>
                 <div class="camera-frame">
@@ -215,6 +216,6 @@
     </div>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/static/app.js?v=20260709-people-edit-delete"></script>
+    <script src="/static/app.js?v=20260713-auto-checkin"></script>
   </body>
 </html>
