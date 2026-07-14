@@ -285,6 +285,11 @@ h3 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.import-metrics {
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  margin-bottom: 16px;
+}
+
 .grid.two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -302,6 +307,10 @@ h3 {
   gap: 12px;
   min-height: 128px;
   padding: 18px;
+}
+
+.import-metrics .metric {
+  min-height: 104px;
 }
 
 .metric span {
@@ -518,6 +527,12 @@ td {
   border-color: rgba(51, 180, 96, 0.65);
 }
 
+.primary:disabled,
+.secondary:disabled {
+  cursor: progress;
+  opacity: 0.55;
+}
+
 .toast.warn,
 .toast.error {
   border-color: var(--color-orange);
@@ -539,6 +554,7 @@ td {
   }
 
   .metrics,
+  .import-metrics,
   .grid.two {
     grid-template-columns: 1fr;
   }

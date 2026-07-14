@@ -291,6 +291,50 @@ function renderDashboard(data) {
     : '<p class="empty-text">Sem logs.</p>';
 }
 
+function renderFormsImportResult(response) {
+  const summary = response.summary || {};
+  const errors = response.errors || [];
+  const result = $("#formsImportResult");
+  const errorRows = errors.length
+    ? errors.map((error) => `
+        <tr>
+          <td>${error.row || "-"}</td>
+          <td>${error.person_id || "-"}</td>
+          <td>${error.name || "-"}</td>
+          <td><span class="badge danger">${error.code || "-"}</span></td>
+          <td>${error.message || "-"}</td>
+          <td>${error.expected_filename || "-"}</td>
+        </tr>
+      `).join("")
+    : emptyRow(6, "Nenhum erro encontrado.");
+
+  result.className = "import-result";
+  result.innerHTML = `
+    <div class="metrics import-metrics">
+      <article class="metric"><span>Linhas</span><strong>${summary.total_rows || 0}</strong></article>
+      <article class="metric"><span>Importados</span><strong>${summary.imported || 0}</strong></article>
+      <article class="metric"><span>Fotos completadas</span><strong>${summary.photo_completed || 0}</strong></article>
+      <article class="metric"><span>Ignorados</span><strong>${summary.ignored || 0}</strong></article>
+      <article class="metric"><span>Erros</span><strong>${summary.errors_count || 0}</strong></article>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Linha</th>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Código</th>
+            <th>Mensagem</th>
+            <th>Foto esperada</th>
+          </tr>
+        </thead>
+        <tbody>${errorRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
 async function loadUnits() {
   const data = await requestJson("/units");
   state.units = data.units || [];
@@ -400,6 +444,36 @@ $("#manualForm").addEventListener("submit", async (event) => {
     await refreshAll();
   } catch (error) {
     toast(error.message, "error");
+  }
+});
+
+$("#formsImportForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const resultElement = $("#formsImportResult");
+
+  button.disabled = true;
+  button.textContent = "Importando...";
+  resultElement.className = "empty-text";
+  resultElement.textContent = "Processando planilha e fotos...";
+
+  try {
+    const response = await requestJson("/api/imports/forms", {
+      method: "POST",
+      body: new FormData(form),
+    });
+    renderFormsImportResult(response);
+    const errorsCount = response.summary?.errors_count || 0;
+    toast(errorsCount ? `Importação concluída com ${errorsCount} erro(s).` : "Importação concluída com sucesso.", errorsCount ? "warn" : "success");
+    form.reset();
+    await refreshAll();
+  } catch (error) {
+    resultElement.textContent = error.message;
+    toast(error.message, "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Importar participantes";
   }
 });
 

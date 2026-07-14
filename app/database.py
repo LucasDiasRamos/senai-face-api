@@ -372,6 +372,19 @@ def create_person(person_id, name, unit_id=None, role=None, unit=None):
         """, (person_id, name, resolved_unit_id, resolved_unit_name, role))
 
 
+def create_person_with_embedding(person_id, name, embedding, image_path, unit_id=None, role=None, unit=None):
+    with get_connection() as conn:
+        resolved_unit_id, resolved_unit_name = _resolve_unit(conn, unit_id, unit)
+        conn.execute("""
+            INSERT INTO people (person_id, name, unit_id, unit, role)
+            VALUES (?, ?, ?, ?, ?)
+        """, (person_id, name, resolved_unit_id, resolved_unit_name, role))
+        conn.execute("""
+            INSERT INTO face_embeddings (person_id, embedding, image_path)
+            VALUES (?, ?, ?)
+        """, (person_id, json.dumps(embedding.tolist()), image_path))
+
+
 def update_person(person_id, name, unit_id=None, role=None, unit=None):
     with get_connection() as conn:
         resolved_unit_id, resolved_unit_name = _resolve_unit(conn, unit_id, unit)

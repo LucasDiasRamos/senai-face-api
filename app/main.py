@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.database import init_db
 from app.face_engine import FaceEngine
-from app.routes import checkin_routes, health_routes, logs_routes, people_routes, recognition_routes, units_routes
+from app.routes import checkin_routes, health_routes, import_routes, logs_routes, people_routes, recognition_routes, units_routes
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -49,12 +49,14 @@ def frontend_slash():
 app.include_router(health_routes.router)
 app.include_router(units_routes.router)
 app.include_router(people_routes.router)
+app.include_router(import_routes.router)
 app.include_router(recognition_routes.router)
 app.include_router(checkin_routes.router)
 app.include_router(logs_routes.router)
 app.include_router(health_routes.router, prefix="/api")
 app.include_router(units_routes.router, prefix="/api")
 app.include_router(people_routes.router, prefix="/api")
+app.include_router(import_routes.router, prefix="/api")
 app.include_router(recognition_routes.router, prefix="/api")
 app.include_router(checkin_routes.router, prefix="/api")
 app.include_router(logs_routes.router, prefix="/api")

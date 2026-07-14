@@ -25,6 +25,7 @@ A API fica exposta pelo Nginx em:
 - `DELETE /people/{person_id}`
 - `GET /units`
 - `POST /people/{person_id}/photo`
+- `POST /imports/forms`
 - `POST /recognize`
 - `POST /checkin-face`
 - `POST /checkin-manual`
@@ -34,6 +35,26 @@ A API fica exposta pelo Nginx em:
 - `GET /logs`
 
 As mesmas rotas também respondem com prefixo `/api`, por exemplo `POST /api/checkin-face`.
+
+## Importação do Microsoft Forms
+
+A tela `Importar Forms` permite cadastrar participantes a partir de dois arquivos enviados manualmente:
+
+- planilha `.xlsx` exportada do Microsoft Forms
+- arquivo `.zip` com as fotos baixadas do OneDrive ou SharePoint
+
+O importador procura as colunas pelo nome do cabeçalho: `Id`, `Nome Completo`, `Unidade`, `Cargo / Função`, `Foto` e `Confirmação de uso dos dados`. A coluna `Foto` é usada apenas para extrair o nome original do arquivo e procurar a imagem correspondente dentro do ZIP.
+
+As pessoas são gravadas nas tabelas existentes `people` e `face_embeddings`, as imagens ficam em `./data/uploads`, e a unidade é validada contra a tabela `units` carregada a partir de `unidades.txt`. O endpoint é `POST /imports/forms` ou `POST /api/imports/forms` com multipart:
+
+- `spreadsheet`: planilha `.xlsx`
+- `photos`: arquivo `.zip`
+
+Configurações disponíveis no `.env`:
+
+- `FORMS_IMPORT_PREFIX`: prefixo usado no `person_id`, padrão `JP2026`
+- `FORMS_IMPORT_MAX_IMAGE_MB`: tamanho máximo de cada foto, padrão `10`
+- `FORMS_IMPORT_MAX_FILES`: quantidade máxima de arquivos no ZIP, padrão `2000`
 
 ## Unidades
 

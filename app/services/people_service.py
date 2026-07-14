@@ -45,9 +45,17 @@ def require_person(person_id):
 
 
 async def add_person_photo(person_id, image: UploadFile, face_engine):
-    person = require_person(person_id)
     image_bytes = await image.read()
+    return process_person_photo_bytes(
+        person_id=person_id,
+        image_bytes=image_bytes,
+        original_filename=image.filename or "foto.jpg",
+        face_engine=face_engine,
+    )
 
+
+def process_person_photo_bytes(person_id: str, image_bytes: bytes, original_filename: str, face_engine):
+    person = require_person(person_id)
     try:
         embedding = face_engine.get_embedding(image_bytes)
     except ValueError as error:
@@ -55,14 +63,23 @@ async def add_person_photo(person_id, image: UploadFile, face_engine):
         raise HTTPException(status_code=400, detail=str(error))
 
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    extension = Path(image.filename or "foto.jpg").suffix.lower() or ".jpg"
+    extension = Path(original_filename or "foto.jpg").suffix.lower() or ".jpg"
     filename = f"{person_id}-{uuid4().hex}{extension}"
     image_path = UPLOAD_DIR / filename
     image_path.write_bytes(image_bytes)
 
-    save_embedding(person_id, embedding, str(image_path))
+    try:
+        save_embedding(person_id, embedding, str(image_path))
+    except Exception:
+        image_path.unlink(missing_ok=True)
+        raise
+
     register_log("UPLOAD_PHOTO", person_id, "Foto cadastrada e embedding gerado")
-    return person
+    return {
+        "person": person,
+        "embedding": embedding,
+        "image_path": str(image_path),
+    }
 
 
 def delete_existing_person(person_id):

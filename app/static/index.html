@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Credenciamento Senia</title>
-    <link rel="stylesheet" href="/static/styles.css?v=20260713-auto-checkin" />
+    <link rel="stylesheet" href="/static/styles.css?v=20260714-forms-import" />
   </head>
   <body>
     <div class="app-shell">
@@ -19,6 +19,7 @@
           <button class="nav-item" type="button" data-page="test">Check-in Facial</button>
           <button class="nav-item" type="button" data-page="checkins">Credenciamentos</button>
           <button class="nav-item" type="button" data-page="manual">Check-in Manual</button>
+          <button class="nav-item" type="button" data-page="imports">Importar Forms</button>
           <button class="nav-item" type="button" data-page="logs">Logs</button>
         </nav>
         <div class="tags">
@@ -191,6 +192,24 @@
           </form>
         </section>
 
+        <section class="page" data-page-panel="imports">
+          <div class="section-heading">
+            <h2>Importar Microsoft Forms</h2>
+          </div>
+
+          <form id="formsImportForm" class="panel form-panel narrow">
+            <h3>Arquivos da importação</h3>
+            <label>Planilha exportada do Forms<input name="spreadsheet" type="file" accept=".xlsx" required /></label>
+            <label>Arquivo ZIP com as fotos<input name="photos" type="file" accept=".zip" required /></label>
+            <button class="primary" type="submit">Importar participantes</button>
+          </form>
+
+          <section class="panel">
+            <h3>Resultado da importação</h3>
+            <div id="formsImportResult" class="empty-text">Nenhuma importação realizada.</div>
+          </section>
+        </section>
+
         <section class="page" data-page-panel="logs">
           <div class="section-heading">
             <h2>Logs</h2>
@@ -216,6 +235,6 @@
     </div>
 
     <div id="toast" class="toast" hidden></div>
-    <script src="/static/app.js?v=20260713-auto-checkin"></script>
+    <script src="/static/app.js?v=20260714-forms-import"></script>
   </body>
 </html>

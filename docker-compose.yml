@@ -10,6 +10,9 @@ services:
       FACE_CTX_ID: "${FACE_CTX_ID:--1}"
       FACE_HIGH_THRESHOLD: "${FACE_HIGH_THRESHOLD:-0.70}"
       FACE_MEDIUM_THRESHOLD: "${FACE_MEDIUM_THRESHOLD:-0.55}"
+      FORMS_IMPORT_PREFIX: "${FORMS_IMPORT_PREFIX:-JP2026}"
+      FORMS_IMPORT_MAX_IMAGE_MB: "${FORMS_IMPORT_MAX_IMAGE_MB:-10}"
+      FORMS_IMPORT_MAX_FILES: "${FORMS_IMPORT_MAX_FILES:-2000}"
     volumes:
       - ./data:/app/data
       - insightface-cache:/home/app/.insightface
