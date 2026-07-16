@@ -22,8 +22,14 @@ def create_new_person(person_id, name, unit_id=None, role=None, unit=None):
     return get_person(person_id)
 
 
-def get_people():
-    return list_people()
+def get_people(
+    unit_id: int | None = None,
+    search: str | None = None,
+):
+    return list_people(
+        unit_id=unit_id,
+        search=search,
+    )
 
 
 def update_existing_person(person_id, name, unit_id=None, role=None, unit=None):

@@ -33,10 +33,16 @@ async def create_person_route(
 
 
 @router.get("/people")
-def list_people_route():
+def list_people_route(
+    unit_id: int | None = None,
+    search: str | None = None,
+):
     return {
         "success": True,
-        "people": get_people(),
+        "people": get_people(
+            unit_id=unit_id,
+            search=search,
+        ),
     }
 
 

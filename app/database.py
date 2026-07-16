@@ -452,28 +452,85 @@ def get_person(person_id):
         return row_to_dict(row)
 
 
-def list_people():
-    with get_connection() as conn:
-        rows = conn.execute("""
-            SELECT
-                p.id,
-                p.person_id,
-                p.name,
-                p.unit_id,
-                COALESCE(u.name, p.unit) AS unit,
-                p.role,
-                p.active,
-                p.created_at,
-                COUNT(fe.id) AS photos_count
-            FROM people p
-            LEFT JOIN units u ON u.id = p.unit_id
-            LEFT JOIN face_embeddings fe ON fe.person_id = p.person_id
-            WHERE p.active = 1
-            GROUP BY p.id, p.person_id, p.name, p.unit_id, p.unit, u.name, p.role, p.active, p.created_at
-            ORDER BY p.created_at DESC, p.id DESC
-        """).fetchall()
-        return [row_to_dict(row) for row in rows]
+def list_people(
+    unit_id: int | None = None,
+    search: str | None = None,
+):
+    query = """
+        SELECT
+            p.id,
+            p.person_id,
+            p.name,
+            p.unit_id,
+            COALESCE(u.name, p.unit) AS unit,
+            p.role,
+            p.active,
+            p.created_at,
+            COUNT(fe.id) AS photos_count
+        FROM people p
+        LEFT JOIN units u
+            ON u.id = p.unit_id
+        LEFT JOIN face_embeddings fe
+            ON fe.person_id = p.person_id
+        WHERE p.active = 1
+    """
 
+    params = []
+
+    if unit_id is not None:
+        query += """
+            AND p.unit_id = ?
+        """
+        params.append(unit_id)
+
+    normalized_search = (
+        search.strip()
+        if search
+        else ""
+    )
+
+    if normalized_search:
+        pattern = f"%{normalized_search}%"
+
+        query += """
+            AND (
+                p.name LIKE ?
+                OR p.person_id LIKE ?
+                OR p.role LIKE ?
+            )
+        """
+
+        params.extend([
+            pattern,
+            pattern,
+            pattern,
+        ])
+
+    query += """
+        GROUP BY
+            p.id,
+            p.person_id,
+            p.name,
+            p.unit_id,
+            p.unit,
+            u.name,
+            p.role,
+            p.active,
+            p.created_at
+        ORDER BY
+            p.name COLLATE NOCASE ASC
+    """
+
+    with get_connection() as conn:
+        rows = conn.execute(
+            query,
+            params,
+        ).fetchall()
+
+        return [
+            row_to_dict(row)
+            for row in rows
+        ]
 
 def save_embedding(person_id, embedding, image_path=None):
     with get_connection() as conn:
